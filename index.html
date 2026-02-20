@@ -7,31 +7,30 @@
 
   <style>
     :root{
-      --bg:#072194;                 /* 👈 fondo azul pedido */
-      --card:rgba(255,255,255,.10);
+      --bg:#072194;
+      --card: rgba(255,255,255,.12);
       --text:#ffffff;
-      --muted:rgba(255,255,255,.78);
-      --border:rgba(255,255,255,.18);
-      --shadow:0 10px 30px rgba(0,0,0,.28);
-      --radius:16px;
-      --inputBg:rgba(255,255,255,.10);
-      --focus:rgba(255,255,255,.28);
+      --muted: rgba(255,255,255,.78);
+      --border: rgba(255,255,255,.20);
+      --shadow: 0 10px 30px rgba(0,0,0,.28);
+      --radius: 16px;
+      --inputBg: rgba(255,255,255,.12);
     }
     *{box-sizing:border-box}
     body{
       margin:0;
       font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
       background: var(--bg);
-      color:var(--text);
+      color: var(--text);
       padding:18px;
     }
     .container{max-width:780px;margin:0 auto;display:grid;gap:14px}
     .card{
       background: var(--card);
       border:1px solid var(--border);
-      border-radius:var(--radius);
+      border-radius: var(--radius);
       padding:16px;
-      box-shadow:var(--shadow);
+      box-shadow: var(--shadow);
       backdrop-filter: blur(6px);
     }
     h1{margin:0 0 6px;font-size:clamp(20px,3vw,30px)}
@@ -44,14 +43,12 @@
       padding:11px 12px;
       border-radius:12px;
       border:1px solid var(--border);
-      background:var(--inputBg);
-      color:var(--text);
+      background: var(--inputBg);
+      color: var(--text);
       outline:none;
       font-size:14px;
     }
-    input[type="number"]::placeholder{color:rgba(255,255,255,.65)}
     input[type="number"]:focus{
-      border-color:var(--focus);
       box-shadow:0 0 0 3px rgba(255,255,255,.12);
     }
 
@@ -62,13 +59,12 @@
 
     .rangeWrap{display:flex;align-items:center;gap:10px}
     input[type="range"]{width:100%}
-
     .value{
       min-width:56px;text-align:center;
       padding:6px 10px;border-radius:999px;
       border:1px solid var(--border);
-      background:rgba(255,255,255,.10);
-      font-variant-numeric:tabular-nums;
+      background:rgba(255,255,255,.12);
+      font-variant-numeric: tabular-nums;
     }
 
     .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:8px}
@@ -76,11 +72,21 @@
       display:inline-flex;align-items:center;gap:8px;
       padding:8px 10px;border-radius:999px;
       border:1px solid var(--border);
-      background:rgba(255,255,255,.10);
+      background:rgba(255,255,255,.12);
       font-size:13px;
       user-select:none;
     }
     .pill label{margin:0;color:inherit;font-size:13px;display:inline}
+
+    .tagRow{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+    .tag{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:6px 10px;border-radius:999px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.12);
+      color:var(--muted);
+      font-size:12px;
+    }
 
     .resultLabel{color:var(--muted);font-size:12px}
     .result{
@@ -90,35 +96,15 @@
       margin-top:6px;
     }
     .mini{margin-top:8px;color:var(--muted);font-size:12px;line-height:1.35}
-
-    .tagRow{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
-    .tag{
-      display:inline-flex;align-items:center;gap:8px;
-      padding:6px 10px;border-radius:999px;
-      border:1px solid var(--border);
-      background:rgba(255,255,255,.10);
-      color:var(--muted);
-      font-size:12px;
-    }
-
-    noscript .card{border-color:rgba(255,200,0,.65)}
-    noscript .warn{color:#ffe08a}
   </style>
 </head>
 
 <body>
   <div class="container">
-
     <div class="card">
       <h1>Calculadora de Mudanza</h1>
       <p class="sub">Estimación orientativa “desde”. Introduce km, plantas y si hay ascensor.</p>
     </div>
-
-    <noscript>
-      <div class="card">
-        <div class="warn"><strong>JavaScript está desactivado</strong>. Para ver el resultado, activa JavaScript o pega el código en un bloque que permita scripts.</div>
-      </div>
-    </noscript>
 
     <div class="card">
       <div class="grid">
@@ -161,46 +147,34 @@
         <span class="tag" id="tagFloors">Plantas: —</span>
       </div>
 
-      <div class="mini">
-        * “8+” se calcula como 8ª planta para esta estimación.
-      </div>
+      <div class="mini">* “8+” se calcula como 8ª planta para esta estimación.</div>
     </div>
 
     <div class="card">
       <div class="resultLabel">Resultado</div>
       <div class="result" id="result">Haz tu mudanza desde: —</div>
       <div class="mini" id="breakdown"></div>
-      <div class="mini">
-        Nota: Este “desde” no incluye condiciones especiales (grúa, permisos, accesos difíciles, objetos muy pesados, etc.).
-      </div>
+      <div class="mini">Nota: Este “desde” no incluye grúa, permisos, accesos difíciles u objetos muy pesados.</div>
     </div>
-
   </div>
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      // ==========================
-      // PRECIOS (PENSADOS PARA "DESDE")
-      // ==========================
+      // Precios pensados para un "DESDE" (redondeo a 5€)
       const PRICING = {
-        base: 119, // mínimo "desde"
-        // €/km por tramos
+        base: 119,
         kmTiers: [
           { upTo: 10,  perKm: 1.6 },
           { upTo: 30,  perKm: 1.3 },
           { upTo: 100, perKm: 1.1 },
-          { upTo: Number.POSITIVE_INFINITY, perKm: 0.95 }
+          { upTo: Infinity, perKm: 0.95 }
         ],
-        // recargo por planta (por cada planta indicada)
         perFloorWithElevator: 3.5,
         perFloorNoElevator: 9.5,
-        // redondeo
         roundTo: 5,
-        // mínimo absoluto
         absoluteMin: 99
       };
 
-      // Elementos (si alguno no existe, no rompe todo)
       const kmInput = document.getElementById("km");
       const pf = document.getElementById("pickupFloor");
       const df = document.getElementById("dropoffFloor");
@@ -213,51 +187,41 @@
       const tagKm = document.getElementById("tagKm");
       const tagFloors = document.getElementById("tagFloors");
 
-      const required = [kmInput,pf,df,pfVal,dfVal,pe,de,resultEl,breakdownEl,tagKm,tagFloors];
-      if (required.some(x => !x)) {
-        console.error("Faltan elementos del HTML. Revisa que has copiado el código completo.");
-        return;
-      }
-
       const € = (n) => new Intl.NumberFormat("es-ES", { style:"currency", currency:"EUR" }).format(n);
 
       function floorLabel(v){
         const n = Number(v) || 1;
         return (n >= 8) ? "8+" : String(n);
       }
-
       function roundToStep(value, step){
         const s = Math.max(1, Number(step) || 1);
         return Math.round(value / s) * s;
       }
-
       function kmCost(km){
-        let remaining = km;
-        let lastLimit = 0;
-        let cost = 0;
-
-        for (const tier of PRICING.kmTiers){
+        let remaining = km, lastLimit = 0, cost = 0;
+        for(const tier of PRICING.kmTiers){
           const limit = tier.upTo;
           const segment = Math.max(0, Math.min(remaining, limit - lastLimit));
           cost += segment * tier.perKm;
           remaining -= segment;
           lastLimit = limit;
-          if (remaining <= 0) break;
+          if(remaining <= 0) break;
         }
         return cost;
       }
-
       function floorCost(floor, hasElevator){
-        const f = Math.min(Math.max(Number(floor) || 1, 1), 8); // 8+ => 8
+        const f = Math.min(Math.max(Number(floor) || 1, 1), 8);
         const per = hasElevator ? PRICING.perFloorWithElevator : PRICING.perFloorNoElevator;
         return f * per;
       }
 
       function calculate(){
         const km = Math.max(0, Number(kmInput.value) || 0);
-
         const pickupFloor = Number(pf.value) || 1;
         const dropoffFloor = Number(df.value) || 1;
+
+        pfVal.textContent = floorLabel(pf.value);
+        dfVal.textContent = floorLabel(df.value);
 
         const dist = kmCost(km);
         const pickup = floorCost(pickupFloor, pe.checked);
@@ -274,22 +238,16 @@
           `entrega ${floorLabel(dropoffFloor)}${de.checked ? " (con)" : " (sin)"} ascensor`;
 
         resultEl.textContent = `Haz tu mudanza desde: ${€(total)}`;
-        breakdownEl.textContent = `Desglose orientativo: base ${€(PRICING.base)} · distancia ${€(dist)} · plantas ${€(floors)}.`;
-      }
-
-      function sync(){
-        pfVal.textContent = floorLabel(pf.value);
-        dfVal.textContent = floorLabel(df.value);
-        calculate();
+        breakdownEl.textContent =
+          `Desglose orientativo: base ${€(PRICING.base)} · distancia ${€(dist)} · plantas ${€(floors)}.`;
       }
 
       [kmInput, pf, df, pe, de].forEach(el => {
-        el.addEventListener("input", sync);
-        el.addEventListener("change", sync);
+        el.addEventListener("input", calculate);
+        el.addEventListener("change", calculate);
       });
 
-      // Resultado inicial
-      sync();
+      calculate(); // inicial
     });
   </script>
 </body>
