@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Calculadora de Mudanza (desde)</title>
+
+  <style>
+    :root{
+      --bg:#072194;
+      --card: rgba(255,255,255,.12);
+      --text:#ffffff;
+      --muted: rgba(255,255,255,.82);
+      --border: rgba(255,255,255,.22);
+      --shadow: 0 10px 30px rgba(0,0,0,.28);
+      --radius: 16px;
+      --inputBg: rgba(255,255,255,.14);
+      --btnBg: rgba(255,255,255,.16);
+      --btnBgHover: rgba(255,255,255,.22);
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      background: var(--bg);
+      color: var(--text);
+      padding: 18px;
+    }
+    .container{ max-width:780px; margin:0 auto; display:grid; gap:14px; }
+    .card{
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+    h1{ margin:0 0 6px; font-size: clamp(20px,3vw,30px); }
+    .sub{ margin:0; color: var(--muted); font-size:13px; }
+
+    label{ display:block; margin:12px 0 6px; color: var(--muted); font-size:12px; }
+    input[type="number"]{
+      width:100%;
+      padding: 11px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--inputBg);
+      color: var(--text);
+      outline: none;
+      font-size: 14px;
+    }
+    .grid{ display:grid; grid-template-columns: repeat(12,1fr); gap:12px; }
+    .col-6{ grid-column: span 6; }
+    .col-12{ grid-column: span 12; }
+    @media (max-width:680px){ .col-6{ grid-column: span 12; } }
+
+    .rangeWrap{ display:flex; align-items:center; gap:10px; }
+    input[type="range"]{ width:100%; }
+    .value{
+      min-width:56px;
+      text-align:center;
+      padding:6px 10px;
+      border-radius: 999px;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.14);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:8px; }
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.14);
+      font-size: 13px;
+      user-select:none;
+    }
+    .pill label{ margin:0; color:inherit; font-size:13px; display:inline; }
+
+    .tagRow{ display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+    .tag{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.14);
+      color: var(--muted);
+      font-size:12px;
+    }
+
+    .resultLabel{ color: var(--muted); font-size:12px; }
+    .resultRow{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-top:6px; }
+    .result{
+      font-size:32px;
+      font-weight:850;
+      letter-spacing:.2px;
+      margin:0;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--btnBg);
+      color: var(--text);
+      text-decoration:none;
+      font-weight:700;
+      font-size:14px;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+    .btn:hover{ background: var(--btnBgHover); }
+    .btn svg{ width:18px; height:18px; flex:0 0 18px; }
+    .mini{ margin-top:8px; color: var(--muted); font-size:12px; line-height:1.35; }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="card">
+      <h1>Calculadora de Mudanza</h1>
+      <p class="sub">Estimación orientativa “desde”. Introduce km, plantas y si hay ascensor.</p>
+    </div>
+
+    <div class="card">
+      <div class="grid">
+        <div class="col-12">
+          <label for="km">KM de distancia</label>
+          <input id="km" type="number" min="0" step="1" value="1">
+        </div>
+
+        <div class="col-6">
+          <label>Planta de recogida (1–8+)</label>
+          <div class="rangeWrap">
+            <input id="pickupFloor" type="range" min="1" max="8" step="1" value="1">
+            <div class="value" id="pickupFloorVal">1</div>
+          </div>
+          <div class="row">
+            <span class="pill">
+              <input id="pickupElevator" type="checkbox">
+              <label for="pickupElevator">Ascensor</label>
+            </span>
+          </div>
+        </div>
+
+        <div class="col-6">
+          <label>Planta de entrega (1–8+)</label>
+          <div class="rangeWrap">
+            <input id="dropoffFloor" type="range" min="1" max="8" step="1" value="1">
+            <div class="value" id="dropoffFloorVal">1</div>
+          </div>
+          <div class="row">
+            <span class="pill">
+              <input id="dropoffElevator" type="checkbox">
+              <label for="dropoffElevator">Ascensor</label>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tagRow">
+        <span class="tag" id="tagKm">Distancia: —</span>
+        <span class="tag" id="tagFloors">Plantas: —</span>
+      </div>
+
+      <div class="mini">* “8+” se calcula como 8ª planta para esta estimación.</div>
+    </div>
+
+    <div class="card">
+      <div class="resultLabel">Resultado</div>
+      <div class="resultRow">
+        <div class="result" id="result">Haz tu mudanza desde: —</div>
+
+        <a class="btn" id="waBtn"
+           href="https://wa.me/34711259316?text=Hola!%20Me%20gustar%C3%ADa%20pedir%20presupuesto%20para%20un%20servicio"
+           target="_blank" rel="noopener">
+          <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+            <path fill="currentColor" d="M19.11 17.46c-.27-.13-1.6-.79-1.85-.88-.25-.09-.44-.13-.62.13-.18.27-.71.88-.88 1.06-.16.18-.32.2-.59.07-.27-.13-1.14-.42-2.17-1.34-.8-.71-1.34-1.6-1.5-1.86-.16-.27-.02-.41.12-.54.12-.12.27-.32.41-.48.13-.16.18-.27.27-.44.09-.18.04-.34-.02-.48-.07-.13-.62-1.5-.85-2.05-.23-.55-.46-.47-.62-.48h-.53c-.18 0-.48.07-.73.34-.25.27-.96.94-.96 2.29s.99 2.66 1.13 2.84c.13.18 1.95 2.98 4.72 4.18.66.28 1.18.45 1.58.58.66.21 1.26.18 1.73.11.53-.08 1.6-.65 1.82-1.28.23-.62.23-1.15.16-1.28-.07-.13-.25-.2-.52-.34z"/>
+            <path fill="currentColor" d="M26.67 5.33A14.57 14.57 0 0 0 16.02 1C8 1 1.49 7.5 1.49 15.52c0 2.52.66 4.98 1.92 7.16L1 31l8.53-2.24a14.47 14.47 0 0 0 6.49 1.56h.01c8.02 0 14.52-6.51 14.52-14.52 0-3.88-1.51-7.53-4.28-10.47zM16.03 27.8h-.01a12.1 12.1 0 0 1-6.17-1.68l-.44-.26-5.06 1.33 1.35-4.93-.29-.5a12.08 12.08 0 0 1-1.86-6.24C3.55 8.88 9.38 3.05 16.02 3.05c3.23 0 6.27 1.26 8.54 3.54a11.96 11.96 0 0 1 3.54 8.53c0 6.64-5.83 12.68-12.07 12.68z"/>
+          </svg>
+          WhatsApp
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      function euro(n) {
+        var x = Math.round(n);
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " €";
+      }
+      function floorLabel(v) {
+        var n = parseInt(v, 10) || 1;
+        return (n >= 8) ? "8+" : String(n);
+      }
+      function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
+
+      // ====== REGLAS ======
+      // - mínimo: 60€
+      // - máximo: 360€
+      // - cada piso suma SOLO si NO hay ascensor (por separado recogida/entrega)
+      // - los precios deben subir “bien” con km
+      //
+      // Fórmula:
+      // total = baseMin(60) + costeKm + costePisosSinAscensor
+      // total limitado a 360€.
+      var PRICING = {
+        min: 60,
+        max: 360,
+
+        // Coste por km (sube claramente)
+        // 1 km ya suma, pero con el mínimo se queda en 60 en el caso barato
+        perKm: 4.2,
+
+        // Recargo por piso SI NO hay ascensor
+        // Ejemplo: 8º->8º sin ascensor = (8+8)*9 = 144€ + km + mínimo => sube bastante, sin pasarse
+        perFloorNoElevator: 9,
+
+        // redondeo para “desde”
+        roundTo: 5
+      };
+
+      function roundToStep(value, step){
+        var s = Math.max(1, parseInt(step, 10) || 1);
+        return Math.round(value / s) * s;
+      }
+
+      function floorsCost(floor, hasElevator){
+        if (hasElevator) return 0;                 // ✅ con ascensor no suma
+        var f = clamp(parseInt(floor, 10) || 1, 1, 8);
+        return f * PRICING.perFloorNoElevator;
+      }
+
+      function init() {
+        var kmInput = document.getElementById("km");
+        var pf = document.getElementById("pickupFloor");
+        var df = document.getElementById("dropoffFloor");
+        var pfVal = document.getElementById("pickupFloorVal");
+        var dfVal = document.getElementById("dropoffFloorVal");
+        var pe = document.getElementById("pickupElevator");
+        var de = document.getElementById("dropoffElevator");
+        var resultEl = document.getElementById("result");
+        var tagKm = document.getElementById("tagKm");
+        var tagFloors = document.getElementById("tagFloors");
+        var waBtn = document.getElementById("waBtn");
+
+        if (!kmInput || !pf || !df || !pfVal || !dfVal || !pe || !de || !resultEl || !tagKm || !tagFloors || !waBtn) return;
+
+        function calculate() {
+          var km = parseFloat(kmInput.value);
+          if (isNaN(km) || km < 0) km = 0;
+
+          pfVal.textContent = floorLabel(pf.value);
+          dfVal.textContent = floorLabel(df.value);
+
+          var pickupFloor = parseInt(pf.value, 10) || 1;
+          var dropoffFloor = parseInt(df.value, 10) || 1;
+
+          var kmCost = km * PRICING.perKm;
+
+          var floorCostTotal =
+            floorsCost(pickupFloor, pe.checked) +
+            floorsCost(dropoffFloor, de.checked);
+
+          var total = PRICING.min + kmCost + floorCostTotal;
+
+          total = roundToStep(total, PRICING.roundTo);
+          total = clamp(total, PRICING.min, PRICING.max);
+
+          tagKm.textContent = "Distancia: " + Math.round(km) + " km";
+          tagFloors.textContent =
+            "Plantas: recogida " + floorLabel(pickupFloor) + (pe.checked ? " (con)" : " (sin)") + " ascensor · " +
+            "entrega " + floorLabel(dropoffFloor) + (de.checked ? " (con)" : " (sin)") + " ascensor";
+
+          resultEl.textContent = "Haz tu mudanza desde: " + euro(total);
+
+          // WhatsApp con info útil
+          var baseText =
+            "Hola! Me gustaría pedir presupuesto para un servicio. " +
+            "Precio estimado desde: " + total + "€. " +
+            "Distancia: " + Math.round(km) + "km. " +
+            "Plantas: recogida " + floorLabel(pickupFloor) + (pe.checked ? " con" : " sin") + " ascensor, " +
+            "entrega " + floorLabel(dropoffFloor) + (de.checked ? " con" : " sin") + " ascensor.";
+          waBtn.href = "https://wa.me/34711259316?text=" + encodeURIComponent(baseText);
+        }
+
+        var els = [kmInput, pf, df, pe, de];
+        for (var i = 0; i < els.length; i++) {
+          els[i].addEventListener("input", calculate);
+          els[i].addEventListener("change", calculate);
+        }
+
+        calculate();
+      }
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", init);
+      } else {
+        init();
+      }
+    })();
+  </script>
+</body>
+</html>
