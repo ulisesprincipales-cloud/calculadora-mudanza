@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Calculadora de Mudanza (desde)</title>
+
+  <style>
+    :root{
+      --bg:#072194;
+      --card: rgba(255,255,255,.12);
+      --text:#ffffff;
+      --muted: rgba(255,255,255,.82);
+      --border: rgba(255,255,255,.22);
+      --shadow: 0 10px 30px rgba(0,0,0,.28);
+      --radius: 16px;
+      --inputBg: rgba(255,255,255,.14);
+      --btnBg: rgba(255,255,255,.16);
+      --btnBgHover: rgba(255,255,255,.22);
+      --danger: rgba(255,210,125,.95);
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      background: var(--bg);
+      color: var(--text);
+      padding: 18px;
+    }
+    .container{ max-width:780px; margin:0 auto; display:grid; gap:14px; }
+    .card{
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+    h1{ margin:0 0 6px; font-size: clamp(20px,3vw,30px); }
+    .sub{ margin:0; color: var(--muted); font-size:13px; }
+
+    .stepTitle{ margin:0 0 8px; font-size:18px; font-weight:800; }
+    .stepHint{ margin:0 0 10px; color:var(--muted); font-size:13px; }
+
+    label{ display:block; margin:12px 0 6px; color: var(--muted); font-size:12px; }
+    input[type="number"]{
+      width:100%;
+      padding: 11px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--inputBg);
+      color: var(--text);
+      outline: none;
+      font-size: 14px;
+    }
+
+    .rangeWrap{ display:flex; align-items:center; gap:10px; }
+    input[type="range"]{ width:100%; }
+    .value{
+      min-width:56px;
+      text-align:center;
+      padding:6px 10px;
+      border-radius: 999px;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.14);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:8px; }
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.14);
+      font-size: 13px;
+      user-select:none;
+    }
+    .pill label{ margin:0; color:inherit; font-size:13px; display:inline; }
+
+    .navRow{
+      display:flex;
+      justify-content: space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:14px;
+    }
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      padding:10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--btnBg);
+      color: var(--text);
+      text-decoration:none;
+      font-weight:800;
+      font-size:14px;
+      cursor:pointer;
+      white-space:nowrap;
+      min-width: 140px;
+    }
+    .btn:hover{ background: var(--btnBgHover); }
+    .btn[disabled]{
+      opacity:.55;
+      cursor:not-allowed;
+    }
+
+    .progress{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      margin-top:10px;
+    }
+    .dot{
+      width:10px;height:10px;border-radius:999px;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.10);
+    }
+    .dot.active{ background: rgba(255,255,255,.92); }
+
+    .resultLabel{ color: var(--muted); font-size:12px; }
+    .resultRow{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-top:6px; }
+    .result{
+      font-size:32px;
+      font-weight:900;
+      letter-spacing:.2px;
+      margin:0;
+    }
+    .mini{ margin-top:8px; color: var(--muted); font-size:12px; line-height:1.35; }
+    .warn{ color: var(--danger); font-size:12px; margin-top:10px; }
+
+    .hidden{ display:none !important; }
+
+    .wa svg{ width:18px; height:18px; flex:0 0 18px; }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="card">
+      <h1>Calculadora de Mudanza</h1>
+      <p class="sub">Estimación orientativa “desde”.</p>
+      <div class="progress" aria-label="Progreso">
+        <span class="dot" id="dot1"></span>
+        <span class="dot" id="dot2"></span>
+        <span class="dot" id="dot3"></span>
+        <span class="dot" id="dot4"></span>
+      </div>
+    </div>
+
+    <!-- STEP 1: KM -->
+    <div class="card" id="step1">
+      <p class="stepTitle">Paso 1/4 · Distancia</p>
+      <p class="stepHint">Indica los kilómetros aproximados.</p>
+
+      <label for="km">KM de distancia</label>
+      <input id="km" type="number" min="0" step="1" value="1">
+
+      <div class="navRow">
+        <span></span>
+        <button class="btn" id="next1" type="button">Siguiente</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: RECOGIDA -->
+    <div class="card hidden" id="step2">
+      <p class="stepTitle">Paso 2/4 · Recogida</p>
+      <p class="stepHint">Selecciona la planta y si hay ascensor.</p>
+
+      <label>Planta de recogida (0–8+)</label>
+      <div class="rangeWrap">
+        <input id="pickupFloor" type="range" min="0" max="8" step="1" value="0">
+        <div class="value" id="pickupFloorVal">0</div>
+      </div>
+
+      <div class="row">
+        <span class="pill">
+          <input id="pickupElevator" type="checkbox">
+          <label for="pickupElevator">Ascensor</label>
+        </span>
+      </div>
+
+      <div class="navRow">
+        <button class="btn" id="back2" type="button">Atrás</button>
+        <button class="btn" id="next2" type="button">Siguiente</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: ENTREGA -->
+    <div class="card hidden" id="step3">
+      <p class="stepTitle">Paso 3/4 · Entrega</p>
+      <p class="stepHint">Selecciona la planta y si hay ascensor.</p>
+
+      <label>Planta de entrega (0–8+)</label>
+      <div class="rangeWrap">
+        <input id="dropoffFloor" type="range" min="0" max="8" step="1" value="0">
+        <div class="value" id="dropoffFloorVal">0</div>
+      </div>
+
+      <div class="row">
+        <span class="pill">
+          <input id="dropoffElevator" type="checkbox">
+          <label for="dropoffElevator">Ascensor</label>
+        </span>
+      </div>
+
+      <div class="navRow">
+        <button class="btn" id="back3" type="button">Atrás</button>
+        <button class="btn" id="next3" type="button">Ver precio</button>
+      </div>
+    </div>
+
+    <!-- STEP 4: RESULTADO -->
+    <div class="card hidden" id="step4">
+      <div class="resultLabel">Resultado</div>
+      <div class="resultRow">
+        <div class="result" id="result">Haz tu mudanza desde: —</div>
+
+        <a class="btn wa" id="waBtn"
+           href="https://wa.me/34711259316?text=Hola!%20Me%20gustar%C3%ADa%20pedir%20presupuesto%20para%20un%20servicio"
+           target="_blank" rel="noopener">
+          <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+            <path fill="currentColor" d="M19.11 17.46c-.27-.13-1.6-.79-1.85-.88-.25-.09-.44-.13-.62.13-.18.27-.71.88-.88 1.06-.16.18-.32.2-.59.07-.27-.13-1.14-.42-2.17-1.34-.8-.71-1.34-1.6-1.5-1.86-.16-.27-.02-.41.12-.54.12-.12.27-.32.41-.48.13-.16.18-.27.27-.44.09-.18.04-.34-.02-.48-.07-.13-.62-1.5-.85-2.05-.23-.55-.46-.47-.62-.48h-.53c-.18 0-.48.07-.73.34-.25.27-.96.94-.96 2.29s.99 2.66 1.13 2.84c.13.18 1.95 2.98 4.72 4.18.66.28 1.18.45 1.58.58.66.21 1.26.18 1.73.11.53-.08 1.6-.65 1.82-1.28.23-.62.23-1.15.16-1.28-.07-.13-.25-.2-.52-.34z"/>
+            <path fill="currentColor" d="M26.67 5.33A14.57 14.57 0 0 0 16.02 1C8 1 1.49 7.5 1.49 15.52c0 2.52.66 4.98 1.92 7.16L1 31l8.53-2.24a14.47 14.47 0 0 0 6.49 1.56h.01c8.02 0 14.52-6.51 14.52-14.52 0-3.88-1.51-7.53-4.28-10.47zM16.03 27.8h-.01a12.1 12.1 0 0 1-6.17-1.68l-.44-.26-5.06 1.33 1.35-4.93-.29-.5a12.08 12.08 0 0 1-1.86-6.24C3.55 8.88 9.38 3.05 16.02 3.05c3.23 0 6.27 1.26 8.54 3.54a11.96 11.96 0 0 1 3.54 8.53c0 6.64-5.83 12.68-12.07 12.68z"/>
+          </svg>
+          WhatsApp
+        </a>
+      </div>
+
+      <div class="mini" id="summary"></div>
+
+      <div class="navRow">
+        <button class="btn" id="back4" type="button">Atrás</button>
+        <button class="btn" id="restart" type="button">Empezar de nuevo</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      function euro(n) {
+        var x = Math.round(n);
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " €";
+      }
+      function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
+      function roundToStep(value, step){
+        var s = Math.max(1, parseInt(step, 10) || 1);
+        return Math.round(value / s) * s;
+      }
+      function floorLabel(v){
+        var n = parseInt(v, 10);
+        if (isNaN(n)) n = 0;
+        return (n >= 8) ? "8+" : String(n);
+      }
+      function ascLabel(hasElevator){ return hasElevator ? "con ascensor" : "sin ascensor"; }
+
+      // ====== PRECIOS (se mantienen tus reglas anteriores) ======
+      // - mínimo: 60€
+      // - máximo: 360€
+      // - cada piso suma SOLO si NO hay ascensor (por separado recogida/entrega)
+      var PRICING = {
+        min: 60,
+        max: 360,
+        perKm: 4.2,
+        perFloorNoElevator: 9,
+        roundTo: 5
+      };
+
+      function floorsCost(floor, hasElevator){
+        if (hasElevator) return 0;
+        var f = clamp(parseInt(floor, 10) || 0, 0, 8); // ✅ incluye planta 0
+        return f * PRICING.perFloorNoElevator;
+      }
+
+      function calcTotal(km, pickFloor, pickElev, dropFloor, dropElev){
+        var kmCost = km * PRICING.perKm;
+        var floorCostTotal = floorsCost(pickFloor, pickElev) + floorsCost(dropFloor, dropElev);
+        var total = PRICING.min + kmCost + floorCostTotal;
+        total = roundToStep(total, PRICING.roundTo);
+        total = clamp(total, PRICING.min, PRICING.max);
+        return total;
+      }
+
+      function showStep(n){
+        var s1 = document.getElementById("step1");
+        var s2 = document.getElementById("step2");
+        var s3 = document.getElementById("step3");
+        var s4 = document.getElementById("step4");
+        s1.classList.add("hidden");
+        s2.classList.add("hidden");
+        s3.classList.add("hidden");
+        s4.classList.add("hidden");
+        if (n===1) s1.classList.remove("hidden");
+        if (n===2) s2.classList.remove("hidden");
+        if (n===3) s3.classList.remove("hidden");
+        if (n===4) s4.classList.remove("hidden");
+
+        // dots
+        var d1 = document.getElementById("dot1");
+        var d2 = document.getElementById("dot2");
+        var d3 = document.getElementById("dot3");
+        var d4 = document.getElementById("dot4");
+        d1.classList.remove("active"); d2.classList.remove("active"); d3.classList.remove("active"); d4.classList.remove("active");
+        if (n===1) d1.classList.add("active");
+        if (n===2) d2.classList.add("active");
+        if (n===3) d3.classList.add("active");
+        if (n===4) d4.classList.add("active");
+      }
+
+      function init(){
+        // Inputs
+        var kmEl = document.getElementById("km");
+
+        var pf = document.getElementById("pickupFloor");
+        var pfVal = document.getElementById("pickupFloorVal");
+        var pe = document.getElementById("pickupElevator");
+
+        var df = document.getElementById("dropoffFloor");
+        var dfVal = document.getElementById("dropoffFloorVal");
+        var de = document.getElementById("dropoffElevator");
+
+        // Result
+        var resultEl = document.getElementById("result");
+        var summaryEl = document.getElementById("summary");
+        var waBtn = document.getElementById("waBtn");
+
+        // Nav buttons
+        var next1 = document.getElementById("next1");
+
+        var back2 = document.getElementById("back2");
+        var next2 = document.getElementById("next2");
+
+        var back3 = document.getElementById("back3");
+        var next3 = document.getElementById("next3");
+
+        var back4 = document.getElementById("back4");
+        var restart = document.getElementById("restart");
+
+        if (!kmEl || !pf || !pfVal || !pe || !df || !dfVal || !de || !resultEl || !summaryEl || !waBtn ||
+            !next1 || !back2 || !next2 || !back3 || !next3 || !back4 || !restart) return;
+
+        function syncFloorLabels(){
+          pfVal.textContent = floorLabel(pf.value);
+          dfVal.textContent = floorLabel(df.value);
+        }
+
+        function readKm(){
+          var km = parseFloat(kmEl.value);
+          if (isNaN(km) || km < 0) km = 0;
+          return km;
+        }
+
+        function renderResult(){
+          var km = readKm();
+          var pickFloor = parseInt(pf.value, 10) || 0;
+          var dropFloor = parseInt(df.value, 10) || 0;
+
+          var total = calcTotal(km, pickFloor, pe.checked, dropFloor, de.checked);
+
+          // UI
+          resultEl.textContent = "Haz tu mudanza desde: " + euro(total);
+
+          var pickTxt = floorLabel(pickFloor) + "° " + ascLabel(pe.checked);
+          var dropTxt = floorLabel(dropFloor) + "° " + ascLabel(de.checked);
+          summaryEl.textContent = "Recogida: " + pickTxt + " · Entrega: " + dropTxt + " · Distancia: " + Math.round(km) + " km";
+
+          // WhatsApp message (tal y como pediste)
+          var waText =
+            "Hola! He recibido una estimación desde: " + total + "€ para hacer mi mudanza de " +
+            floorLabel(pickFloor) + "° " + (pe.checked ? "Con ascensor" : "Sin ascensor") + " a " +
+            floorLabel(dropFloor) + "° " + (de.checked ? "con ascensor" : "sin ascensor") + ".\n\n" +
+            "Podéis darme más información?";
+
+          waBtn.href = "https://wa.me/34711259316?text=" + encodeURIComponent(waText);
+        }
+
+        // Sync sliders
+        pf.addEventListener("input", function(){ syncFloorLabels(); });
+        df.addEventListener("input", function(){ syncFloorLabels(); });
+
+        // Navigation
+        next1.addEventListener("click", function(){
+          syncFloorLabels();
+          showStep(2);
+        });
+
+        back2.addEventListener("click", function(){ showStep(1); });
+        next2.addEventListener("click", function(){
+          syncFloorLabels();
+          showStep(3);
+        });
+
+        back3.addEventListener("click", function(){ showStep(2); });
+        next3.addEventListener("click", function(){
+          syncFloorLabels();
+          renderResult();
+          showStep(4);
+        });
+
+        back4.addEventListener("click", function(){ showStep(3); });
+
+        restart.addEventListener("click", function(){
+          // reset
+          kmEl.value = "1";
+          pf.value = "0"; pe.checked = false;
+          df.value = "0"; de.checked = false;
+          syncFloorLabels();
+          showStep(1);
+        });
+
+        // Init
+        syncFloorLabels();
+        showStep(1);
+      }
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", init);
+      } else {
+        init();
+      }
+    })();
+  </script>
+</body>
+</html>
+```0
